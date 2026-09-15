@@ -1,7 +1,18 @@
 # @vidofy/cli
 
-Generate AI video, images and voice from your terminal — one command, billed to
-your own [Vidofy](https://vidofy.ai) account. Scriptable, pipeable, CI-ready.
+[![npm](https://img.shields.io/npm/v/@vidofy/cli?color=cb3837&logo=npm)](https://www.npmjs.com/package/@vidofy/cli)
+[![node](https://img.shields.io/node/v/@vidofy/cli)](https://nodejs.org)
+[![licence](https://img.shields.io/npm/l/@vidofy/cli?color=blue)](./LICENSE)
+
+Generate AI **video, images, audio and speech from your terminal** — one command,
+billed to your own [Vidofy](https://vidofy.ai) account. Scriptable, pipeable,
+CI-ready.
+
+Over 570 models, including **Veo 3.1**, **Kling 3.0**, **Flux 2**,
+**Seedance 2.5**, **Wan 2.7**, **Hailuo 2.3**, **Runway**, **Luma Ray 2**,
+**Qwen Image 3.0**, **Vidu Q3** and **LTX 2** — text-to-video, image-to-video,
+text-to-image, image editing, video and photo effects, lipsync, text-to-speech
+and voice cloning.
 
 ```bash
 npm i -g @vidofy/cli
@@ -70,6 +81,28 @@ nano-banana-2-t2i
 
 `--mode` accepts any of the three spellings a mode has — `text-to-image`, `t2i`,
 or `Text to Image`. With no `--mode` it lists the modes instead.
+
+**The modes, and roughly what each holds:**
+
+| Mode | `--mode` | What it does |
+|---|---|---|
+| Video Effects | `video-effects` | one-click effects applied to a clip |
+| Image to Video | `i2v` | animate a still — Veo 3.1, Kling 3.0, Hailuo 2.3, Wan 2.7 |
+| Text to Video | `t2v` | a clip from a prompt — Veo 3.1, Seedance 2.5, LTX 2, Vidu Q3 |
+| Photo Effects | `photo-effects` | one-click effects applied to a photo |
+| Text to Image | `t2i` | an image from a prompt — Flux 2, Qwen Image 3.0, Nano Banana |
+| Image to Image | `i2i` | edit or restyle an existing image |
+| First to Last Frame | `flf2v` | a clip that travels between two stills |
+| Reference to Video | `r2v` | a clip that keeps a reference subject |
+| Image Tools | `image-tools` | upscale, remove background, and similar |
+| Video to Video | `v2v` | restyle or transform an existing clip |
+| Text to Speech | `t2s` | speech from text |
+| Lip Sync | `lipsync` | match a face to an audio track |
+| Motion Control | `m2c` | drive motion from a reference |
+| Voice Cloning | `v2c` | speech in a cloned voice |
+
+The catalogue changes without a release of this package — `vidofy models list`
+always answers from the server, never from a table baked in here.
 
 One slug per line on stdout, so:
 
@@ -167,6 +200,39 @@ against the model's page.
 `2` and `3` are separate on purpose: a job that gets `3` should refresh its
 token, while one that gets `2` has a mistake in its own command and retrying
 will never help.
+
+---
+
+## Troubleshooting
+
+**`Not signed in. Run `vidofy auth login`…`** — exit `3`. No token on this
+machine. On a server with no browser, set `VIDOFY_TOKEN` instead (see *On a
+server, or in CI*).
+
+**`All of 7421, 7422, 7423, 7424, 7425 are in use`** — `auth login` waits for the
+browser on one of five loopback ports, and every one is taken. Free one and run
+it again. The ports are fixed because the sign-in redirect must match a list the
+server publishes; a random port cannot be on it.
+
+**`That is an API key (vky_…)`** — this CLI signs in to a personal Vidofy account
+and spends its coins. It does not take an API key. Run `vidofy auth login`.
+
+**`--model is required`** — exit `2`. Find one with
+`vidofy models list --mode t2i`.
+
+**A flag did nothing** — a field the model does not have is dropped by the server
+rather than rejected, so a typo like `--aspct_ratio` is silent. Check the
+spelling on the model's page.
+
+**`Could not price this first`** — the estimate failed, not the generation. With
+`--dry-run` nothing was charged; without it the job still ran and was billed at
+the real price.
+
+**`Finished, but the result carried no file URL`** — the generation reached a
+final state with no output. Nothing to download; check it with
+`vidofy generate get <id>`.
+
+Set `VIDOFY_DEBUG=1` to print a stack trace on any failure.
 
 ---
 
