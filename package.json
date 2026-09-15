@@ -1,7 +1,7 @@
 {
   "name": "@vidofy/cli",
   "version": "0.1.0",
-  "description": "Generate AI video, images and voice from your terminal — one command, billed to your own Vidofy account. Scriptable, pipeable, CI-ready.",
+  "description": "Generate AI video, images and voice from your terminal — Veo 3.1, Kling 3.0, Flux 2, Seedance 2.5, Wan 2.7, Hailuo 2.3 and 570+ models, billed to your own Vidofy account. Scriptable, pipeable, CI-ready.",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -44,7 +44,7 @@
     "type": "git",
     "url": "git+https://github.com/vidofy/cli.git"
   },
-  "homepage": "https://vidofy.ai/cli",
+  "homepage": "https://vidofy.ai/en/cli",
   "bugs": {
     "url": "https://github.com/vidofy/cli/issues"
   },

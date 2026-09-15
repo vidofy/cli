@@ -1,3 +1,9 @@
 node_modules/
 dist/
 *.tsbuildinfo
+
+# A publish token belongs in ~/.npmrc, never beside the package. `npm config set`
+# writes to the home file, but `npm config set --location=project` writes HERE —
+# one wrong flag and the token is committed to a public repository. The sibling
+# package already ignored this; this one did not.
+.npmrc
