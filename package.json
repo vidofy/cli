@@ -1,0 +1,53 @@
+{
+  "name": "@vidofy/cli",
+  "version": "0.1.0",
+  "description": "Generate AI video, images and voice from your terminal — one command, billed to your own Vidofy account. Scriptable, pipeable, CI-ready.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "vidofy": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/index.js",
+    "test": "npm run build && node test/contract.test.mjs"
+  },
+  "dependencies": {
+    "@vidofy/mcp": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  },
+  "keywords": [
+    "vidofy",
+    "cli",
+    "ai",
+    "video-generation",
+    "image-generation",
+    "text-to-speech",
+    "terminal"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vidofy/cli.git"
+  },
+  "homepage": "https://vidofy.ai/cli",
+  "bugs": {
+    "url": "https://github.com/vidofy/cli/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
