@@ -21,7 +21,8 @@
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
-    "test": "npm run build && node test/contract.test.mjs"
+    "test": "npm run build && node test/contract.test.mjs",
+    "prepublishOnly": "npm run build && node test/contract.test.mjs"
   },
   "dependencies": {
     "@vidofy/mcp": "^0.1.0"

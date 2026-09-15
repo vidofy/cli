@@ -1,8 +1,8 @@
 # @vidofy/cli
 
 [![npm](https://img.shields.io/npm/v/@vidofy/cli?color=cb3837&logo=npm)](https://www.npmjs.com/package/@vidofy/cli)
-[![node](https://img.shields.io/node/v/@vidofy/cli)](https://nodejs.org)
-[![licence](https://img.shields.io/npm/l/@vidofy/cli?color=blue)](./LICENSE)
+[![node](https://img.shields.io/badge/node-%E2%89%A518-5fa04e?logo=node.js&logoColor=white)](https://nodejs.org)
+[![licence](https://img.shields.io/badge/licence-MIT-blue)](./LICENSE)
 
 Generate AI **video, images, audio and speech from your terminal** — one command,
 billed to your own [Vidofy](https://vidofy.ai) account. Scriptable, pipeable,
