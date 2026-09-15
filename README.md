@@ -142,8 +142,16 @@ vidofy generate create --model veo-3-1-fast-t2v --prompt "…" \
 The CLI does not keep a list of these. New fields added to a model work the day
 they are added, without updating this package.
 
-To see what a model accepts, look it up on
-[vidofy.ai/docs/models](https://vidofy.ai/docs/models).
+To see what a model accepts, open it on
+[vidofy.ai/en/models](https://vidofy.ai/en/models) — the same options the page
+shows are the flags this CLI takes, and the price it shows is in the same coins
+this CLI spends.
+
+`--dry-run` prices a request without spending anything, and a **required** field
+you left out comes back named. But a flag the model does not have is **ignored,
+not rejected** — the field set is open-ended by design, so `--aspct_ratio` is
+dropped in silence and the generation runs without it. Check the spelling
+against the model's page.
 
 ---
 
