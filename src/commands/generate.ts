@@ -40,7 +40,8 @@ import {
 } from '@vidofy/mcp/map';
 import type { Config } from '@vidofy/mcp/config';
 import { loadSession } from '../session.js';
-import { out, note, ok, dim, bold, warn } from '../ui.js';
+import { choicesFromOptions, withHints } from '../fields.js';
+import { out, note, ok, dim, bold, warn, plural } from '../ui.js';
 
 /** How often we ask, and for how long. Both are generous: a video can be minutes. */
 const POLL_INTERVAL_MS = 3_000;
@@ -126,13 +127,14 @@ async function createGeneration(argv: readonly string[]): Promise<number> {
         );
         credits = readCostCredits(quote, 'coins');
     } catch (err) {
-        if (flags.has('--dry-run')) throw err;   // the whole command was the quote
+        // the whole command was the quote
+        if (flags.has('--dry-run')) throw withHints(err, choicesFromOptions(ident.options, form));
         // Otherwise: a quote we could not get is not a reason to refuse the
         // generation the person asked for. Say so and carry on.
         warn(`Could not price this first (${err instanceof Error ? err.message : 'unknown'}).`);
     }
 
-    if (credits !== null) note(`${bold(String(credits))} credits`);
+    if (credits !== null) note(`${bold(String(credits))} ${plural(credits, 'credit')}`);
 
     if (flags.has('--dry-run')) {
         // stdout carries the number and nothing else, so `--dry-run` is usable
@@ -143,18 +145,27 @@ async function createGeneration(argv: readonly string[]): Promise<number> {
         return 0;
     }
 
-    const submitted = stripProviderCost(
-        await request<Record<string, unknown>>(cfg, {
-            method: 'POST',
-            path: 'generate/submit',
-            form,
-            ...(files.length > 0 ? { files } : {}),
-            /* Derived from the request's own content, so a retried command — the
-               same prompt, the same model — cannot charge twice. This is the
-               audited helper from @vidofy/mcp, not a fresh uuid. */
-            idempotencyKey: contentIdempotencyKey(form, files.map((f) => f.path)),
-        })
-    );
+    /* The refusal the reader is most likely to meet arrives here, because a
+       quote that already failed only WARNED above and carried on. So this is
+       where the field hints have to be attached, not only on the --dry-run
+       path — the owner's report showed both lines and neither named a flag. */
+    let submitted: Record<string, unknown>;
+    try {
+        submitted = stripProviderCost(
+            await request<Record<string, unknown>>(cfg, {
+                method: 'POST',
+                path: 'generate/submit',
+                form,
+                ...(files.length > 0 ? { files } : {}),
+                /* Derived from the request's own content, so a retried command — the
+                   same prompt, the same model — cannot charge twice. This is the
+                   audited helper from @vidofy/mcp, not a fresh uuid. */
+                idempotencyKey: contentIdempotencyKey(form, files.map((f) => f.path)),
+            })
+        );
+    } catch (err) {
+        throw withHints(err, choicesFromOptions(ident.options, form));
+    }
 
     const id = readId(submitted);
     if (id === '') throw new Error('The server accepted the request but returned no media id.');
@@ -343,7 +354,20 @@ function readOutputUrl(result: GenerationResult): string {
  * that alone, so `--dry-run` still answers. Only submit needs the rest, and it
  * says so itself.
  */
-interface ModelIdent { modelKey: string; mode: string; effectKey: string; }
+interface ModelIdent {
+    modelKey: string;
+    mode: string;
+    effectKey: string;
+    /**
+     * The model's own `m_options`, kept rather than discarded.
+     *
+     * It arrives in this same response and costs nothing extra to hold, and it
+     * is what lets a refused field be answered with the values that field
+     * accepts — see fields.ts. Reading it from a SECOND request would be a
+     * second source of truth for the same question.
+     */
+    options: Record<string, unknown> | null;
+}
 
 async function resolveModel(cfg: Config, slug: string): Promise<ModelIdent> {
     try {
@@ -365,13 +389,30 @@ async function resolveModel(cfg: Config, slug: string): Promise<ModelIdent> {
            which: the LONG key is what `m_mode` means on submit and on
            model-credits, and what the media row stores. Never post the
            other one. */
+        /* m_options may arrive already parsed or still as a JSON string — the
+           endpoint has answered both ways. Neither is an error; a shape we
+           cannot read simply means no values to suggest later. */
+        const raw = row['m_options'];
+        let options: Record<string, unknown> | null = null;
+        if (raw !== null && typeof raw === 'object' && !Array.isArray(raw)) {
+            options = raw as Record<string, unknown>;
+        } else if (typeof raw === 'string' && raw !== '') {
+            try {
+                const parsed: unknown = JSON.parse(raw);
+                if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                    options = parsed as Record<string, unknown>;
+                }
+            } catch { /* not JSON — leave it null */ }
+        }
+
         return {
             modelKey: str(row['m_model_key']),
             mode: str(info['mode']),
             effectKey: str(row['m_effect_key']),
+            options,
         };
     } catch {
-        return { modelKey: '', mode: '', effectKey: '' };
+        return { modelKey: '', mode: '', effectKey: '', options: null };
     }
 }
 

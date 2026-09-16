@@ -21,6 +21,7 @@
 
 import { VERSION } from './version.js';
 import { NotSignedInError } from './session.js';
+import { hintsOf } from './fields.js';
 import { fail, note, out, dim, bold } from './ui.js';
 import { balanceCommand } from './commands/balance.js';
 import { modelsCommand } from './commands/models.js';
@@ -91,6 +92,12 @@ main(process.argv.slice(2))
         // someone who mistyped a model slug.
         const message = err instanceof Error ? err.message : String(err);
         fail(message);
+
+        /* Under it, the flag and the values — when the failure was about a
+           field. The server's message names a human label ("Aspect Ratio") and
+           nothing typeable; these lines are the rest of that answer. stderr,
+           like every other line a person reads. */
+        for (const line of hintsOf(err)) note(line);
         if ((process.env['VIDOFY_DEBUG'] ?? '') !== '' && err instanceof Error && err.stack) {
             note(dim(err.stack));
         }

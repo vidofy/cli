@@ -147,6 +147,66 @@ console.log('=== F. a wrong credential is refused before the wire ===');
     ok(j.err.includes('vmt_'), 'and the message names the shape a real one has');
 }
 
+console.log('=== G. a refused field names its flag and its values ===');
+{
+    /* The page's whole promise is that a command runs. When one does not, the
+       server already says which field and often which values — and this program
+       used to print the human label alone ("Aspect Ratio"), which is neither a
+       flag anyone can type nor a value anyone can choose.
+     *
+     * Asserted against the real payload shapes, both measured on the live API:
+     *   missing → details[{field, input:""}]           and NO `allowed`
+     *   invalid → details[{field, input, allowed:[…]}]
+     * The values for the first come from the model's own m_options, which
+     * generate.ts already holds for the command in flight. */
+    const { choicesFromOptions, fieldHints } = await import(join(here, '..', 'dist', 'fields.js'));
+
+    const options = {
+        m_aspect_ratio: ['1:1', '3:4', '16:9'],
+        m_duration: { 3: ['360', '540'], 8: ['720', '1080'] },
+        m_defaults: { m_duration: '8' },
+        m_dynamic_fields: [
+            { name: 'm_voice_id', required: true, options: [
+                { value: 'Wise_Woman' }, { is_label: true, value: '—' }, { value: 'Calm_Woman' },
+            ] },
+        ],
+    };
+
+    const choices = choicesFromOptions(options, {});
+    ok(choices.m_aspect_ratio.join() === '1:1,3:4,16:9', 'a base list becomes choices');
+    ok(choices.m_duration.join() === '3,8', 'the duration MAP contributes its keys');
+    ok(choices.m_resolution.join() === '720,1080',
+        'and the resolutions of the DEFAULTED duration, not the first one', choices.m_resolution?.join());
+    ok(choicesFromOptions(options, { m_duration: '3' }).m_resolution.join() === '360,540',
+        'the request\'s own duration wins over the default');
+    ok(choices.m_voice_id.join() === 'Wise_Woman,Calm_Woman',
+        'a dynamic field offers its options, with the label row dropped');
+
+    const missing = { details: { details: [{ field: 'm_aspect_ratio', input: '' }] } };
+    const mLines = fieldHints(missing, choices).join('\n');
+    ok(mLines.includes('--aspect_ratio'), 'a MISSING field names the flag to type');
+    ok(mLines.includes('1:1, 3:4, 16:9'), 'and lists the values, which the server did not send');
+
+    const invalid = {
+        details: { details: [{ field: 'm_aspect_ratio', input: '7:3', allowed: ['1:1', '9:16'] }] },
+    };
+    const iLines = fieldHints(invalid, choices).join('\n');
+    ok(iLines.includes('1:1, 9:16'), 'the server\'s own list wins over the model row');
+    ok(!iLines.includes('3:4'), 'so a stale model row cannot contradict the live answer');
+    ok(iLines.includes('you sent 7:3'), 'and the rejected value is quoted back');
+
+    ok(fieldHints(new Error('plain'), choices).length === 0, 'an ordinary error produces no hints');
+    ok(fieldHints({ details: { details: 'not-an-array' } }).length === 0, 'and neither does a shape we cannot read');
+}
+
+console.log('=== H. one credit is not "1 credits" ===');
+{
+    const { plural } = await import(join(here, '..', 'dist', 'ui.js'));
+    ok(plural(1, 'credit') === 'credit', 'exactly one is singular');
+    ok(plural(0, 'credit') === 'credits', 'zero is plural, as English has it');
+    ok(plural(2, 'credit') === 'credits', 'and so is more than one');
+}
+
 console.log('========================================');
 console.log(`${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

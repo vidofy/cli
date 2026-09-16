@@ -18,7 +18,7 @@ import { request } from '@vidofy/mcp/backend';
 import { stripProviderCost } from '@vidofy/mcp/map';
 import { loadSession } from '../session.js';
 import { fetchModes, resolveMode, UnknownModeError } from '../modes.js';
-import { out, note, dim, bold, table } from '../ui.js';
+import { out, note, dim, bold, table, plural } from '../ui.js';
 
 interface ModelsFlatResponse {
     /* NOT `models`. The list key is `models_flat`, which is the same trap the
@@ -75,11 +75,11 @@ export async function modelsCommand(argv: readonly string[]): Promise<number> {
     for (const m of rows) out(str(m['m_slug']));
 
     note();
-    note(bold(`${rows.length} models in ${code}`));
+    note(bold(`${rows.length} ${plural(rows.length, 'model')} in ${code}`));
     for (const line of table(
         rows.map((m) => {
             const coins = m['m_coins'];
-            const price = typeof coins === 'number' ? `from ${coins} credits` : '';
+            const price = typeof coins === 'number' ? `from ${coins} ${plural(coins, 'credit')}` : '';
             return [str(m['m_slug']), [str(m['m_name']), price].filter((s) => s !== '').join(' · ')];
         })
     )) {

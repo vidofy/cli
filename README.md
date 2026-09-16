@@ -17,10 +17,16 @@ and voice cloning.
 ```bash
 npm i -g @vidofy/cli
 vidofy auth login
-vidofy generate create --model nano-banana-2-t2i --prompt "a red bicycle" --wait
+vidofy generate create --model nano-banana-2-t2i --prompt "a red bicycle" \
+    --aspect_ratio 1:1 --wait
 ```
 
 Needs Node 18 or newer. Works on macOS, Linux, Windows, and inside a container.
+
+Most models require at least one option of their own — this one wants an aspect
+ratio. You never have to guess which: leave it out and the error names it, or run
+the command with `--dry-run` first, which prices it without spending anything.
+See [*Model options*](#model-options).
 
 ---
 
@@ -187,16 +193,27 @@ vidofy generate create --model veo-3-1-fast-t2v --prompt "…" \
 The CLI does not keep a list of these. New fields added to a model work the day
 they are added, without updating this package.
 
-To see what a model accepts, open it on
+**You do not have to look them up first.** A required option you left out, or a
+value the model does not accept, comes back with the flag and the list:
+
+```console
+$ vidofy generate create --model flux-schnell-t2i --prompt "…" --aspect_ratio 7:3 --dry-run
+✗ Please choose a valid value for: Aspect Ratio.
+  --aspect_ratio  one of: 1:1, 3:4, 4:3, 9:16, 16:9   (you sent 7:3)
+```
+
+Put `--dry-run` on it and that costs nothing at all — it prices the request and
+stops, so this is a free way to find out what a model wants.
+
+To browse them instead, open the model on
 [vidofy.ai/en/models](https://vidofy.ai/en/models) — the same options the page
 shows are the flags this CLI takes, and the price it shows is in the same coins
 this CLI spends.
 
-`--dry-run` prices a request without spending anything, and a **required** field
-you left out comes back named. But a flag the model does not have is **ignored,
-not rejected** — the field set is open-ended by design, so `--aspct_ratio` is
-dropped in silence and the generation runs without it. Check the spelling
-against the model's page.
+One thing is NOT reported: a flag the model does not have is **ignored, not
+rejected** — the field set is open-ended by design, so `--aspct_ratio` is dropped
+in silence and the generation runs without it. A flag that seems to do nothing is
+almost always spelled wrong.
 
 ---
 
@@ -231,6 +248,16 @@ and spends its coins. It does not take an API key. Run `vidofy auth login`.
 
 **`--model is required`** — exit `2`. Find one with
 `vidofy models list --mode t2i`.
+
+**`Missing required fields: …`** / **`Please choose a valid value for: …`** — the
+model wants an option you did not send, or one it does not accept. The line under
+the error names the flag and lists what it takes, so there is nothing to look up:
+
+```console
+$ vidofy generate create --model flux-schnell-t2i --prompt "a red bicycle" --dry-run
+✗ Missing required fields: Aspect Ratio
+  --aspect_ratio  one of: 1:1, 3:4, 4:3, 9:16, 16:9
+```
 
 **A flag did nothing** — a field the model does not have is dropped by the server
 rather than rejected, so a typo like `--aspct_ratio` is silent. Check the

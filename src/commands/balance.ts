@@ -13,7 +13,7 @@
 import { request } from '@vidofy/mcp/backend';
 import { stripProviderCost } from '@vidofy/mcp/map';
 import { loadSession } from '../session.js';
-import { out, note, dim } from '../ui.js';
+import { out, note, dim, plural } from '../ui.js';
 
 export async function balanceCommand(argv: readonly string[]): Promise<number> {
     const cfg = await loadSession();
@@ -44,7 +44,7 @@ export async function balanceCommand(argv: readonly string[]): Promise<number> {
 
     // stderr: what a person wants to see next to it.
     const email = typeof data['u_email'] === 'string' ? data['u_email'] : '';
-    note(dim(`credits${email !== '' ? ` · ${email}` : ''}`));
+    note(dim(`${plural(credits, 'credit')}${email !== '' ? ` · ${email}` : ''}`));
 
     void argv;
     return 0;

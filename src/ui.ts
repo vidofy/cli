@@ -62,6 +62,17 @@ export function ok(line: string): void {
 }
 
 /**
+ * "1 credit", not "1 credits".
+ *
+ * Three places print a number of credits and every one of them said "credits"
+ * unconditionally — visible the moment a model priced at exactly one, which the
+ * cheapest text-to-image model does.
+ */
+export function plural(n: number, one: string, many = `${one}s`): string {
+    return n === 1 ? one : many;
+}
+
+/**
  * Right-pad every first column to the same width so a list reads as a table.
  * Written here rather than pulled in, because a table formatter is not worth a
  * dependency in a program whose whole point is that `npm i -g` is quick.
