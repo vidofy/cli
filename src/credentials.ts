@@ -2,9 +2,13 @@
  * Where the token lives on disk, and who is allowed to read it.
  *
  * `~/.vidofy/credentials.json`. The directory is a PUBLIC PROMISE — /en/cli
- * names it in three places, including the answer to "can I use this in CI?"
- * ("sign in once on a machine that has a browser, then copy the token from
- * ~/.vidofy/"). Moving it breaks that answer, so it moves only with the page.
+ * names it, and the README points at it, so it moves only with them.
+ *
+ * It is NOT, however, where a CI token comes from. That answer used to read
+ * "copy the token from ~/.vidofy/", which was wrong: the token written here is
+ * bound to the client that signed in, and is refused when sent any other way.
+ * CI takes a token made by hand on the account page (see session.ts, and the
+ * README's "On a server, or in CI"). Corrected in all three on 2026-09-16.
  *
  * ── Permissions are load-bearing, not hygiene ───────────────────────────────
  * The file holds a bearer token for the user's own Vidofy account: anything

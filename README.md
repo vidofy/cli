@@ -43,11 +43,23 @@ vidofy auth logout     # forget the token on this machine
 
 ### On a server, or in CI
 
-Sign in once on a machine that has a browser, then copy the token:
+Create a **personal token** at **vidofy.ai → Studio → Account → MCP Access**, and
+give it to the runner:
 
 ```bash
-export VIDOFY_TOKEN="$(node -p "require('$HOME/.vidofy/credentials.json').token")"
+export VIDOFY_TOKEN="vmt_..."
 ```
+
+**Do not copy the token out of `~/.vidofy/`.** This page used to tell you to, and
+it does not work: `vidofy auth login` obtains its token through the browser
+sign-in, which binds it to that one client. Sent any other way it is refused —
+with the unhelpfully general *"This MCP token is not valid. Create a new one"*,
+which no new sign-in would fix. A token you create on the account page carries no
+such binding, which is what makes it the one to put in an environment variable.
+
+It is also the safer half of the trade. A CI token is a separate credential you
+can revoke on its own; copying your workstation's means revoking one revokes both,
+usually at the least convenient moment.
 
 `VIDOFY_TOKEN` takes precedence over the file, so a CI runner cannot pick up a
 developer's token from a mounted home directory.
